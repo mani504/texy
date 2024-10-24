@@ -228,3 +228,141 @@ if __name__ == "__main__":
         logging.error(f"An error occurred: {e}")
         sys.exit(1)
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+import cv2
+import numpy as np
+import json
+import os
+import sys
+
+# Function to enlarge the rectangle by a specified amount
+def enlarge_rectangle(points, enlargement_size, img_shape):
+    x1, y1 = points[0]
+    x2, y2 = points[1]
+
+    # Ensure that enlargement stays within image bounds
+    x1 = max(0, x1 - enlargement_size)
+    y1 = max(0, y1 - enlargement_size)
+    x2 = min(img_shape[1], x2 + enlargement_size)
+    y2 = min(img_shape[0], y2 + enlargement_size)
+
+    return [(int(x1), int(y1)), (int(x2), int(y2))]
+
+# Function to create the outer rectangle around the enlarged one
+def create_outer_rectangle(inner_rect, padding, img_shape):
+    x1, y1 = inner_rect[0]
+    x2, y2 = inner_rect[1]
+
+    # Create an outer rectangle with the specified padding
+    outer_x1 = max(0, x1 - padding)
+    outer_y1 = max(0, y1 - padding)
+    outer_x2 = min(img_shape[1], x2 + padding)
+    outer_y2 = min(img_shape[0], y2 + padding)
+
+    return [(outer_x1, outer_y1), (outer_x2, outer_y2)]
+
+# Function to get the most frequent color from the outer rectangle
+def get_most_frequent_color(image, outer_rect, inner_rect):
+    outer_x1, outer_y1 = outer_rect[0]
+    outer_x2, outer_y2 = outer_rect[1]
+
+    inner_x1, inner_y1 = inner_rect[0]
+    inner_x2, inner_y2 = inner_rect[1]
+
+    # Mask the inner rectangle to exclude it from the outer rectangle area
+    outer_area = np.copy(image[outer_y1:outer_y2, outer_x1:outer_x2])
+    outer_area[inner_y1 - outer_y1:inner_y2 - outer_y1, inner_x1 - outer_x1:inner_x2 - outer_x1] = 0
+
+    # Reshape to a list of pixels
+    outer_pixels = outer_area.reshape(-1, outer_area.shape[-1])
+    outer_pixels = outer_pixels[np.any(outer_pixels != [0, 0, 0], axis=-1)]  # Remove masked pixels
+
+    # Find the most frequent color
+    unique, counts = np.unique(outer_pixels, axis=0, return_counts=True)
+    most_frequent_color = unique[np.argmax(counts)]
+
+    return most_frequent_color
+
+# Function to fill the inner rectangle with the most frequent color from the outer boundary
+def fill_inner_rectangle(image, inner_rect, color):
+    x1, y1 = inner_rect[0]
+    x2, y2 = inner_rect[1]
+
+    # Fill the inner rectangle with the color
+    image[y1:y2, x1:x2] = color
+    return image
+
+# Main function to process the image
+def process_image(json_path: str, output_path: str, enlargement_size: int = 5, outer_padding: int = 20):
+    # Load the JSON file with rectangle coordinates
+    with open(json_path, 'r') as f:
+        data = json.load(f)
+    
+    image_name = data['imagePath']
+    json_dir = os.path.dirname(json_path)
+    
+    # Load the image with the same name as specified in JSON, but with a suffix
+    image_files = [f for f in os.listdir(json_dir) if f.startswith(image_name)]
+    if not image_files:
+        raise FileNotFoundError(f"No image found with prefix '{image_name}' in directory '{json_dir}'.")
+    
+    # Use the first matching image file
+    image_path = os.path.join(json_dir, image_files[0])
+    image = cv2.imread(image_path)
+    img_shape = image.shape
+
+    for shape in data['shapes']:
+        # Extract the original rectangle coordinates
+        rect_coords = [(shape['points'][0][0], shape['points'][0][1]),
+                       (shape['points'][1][0], shape['points'][1][1])]
+
+        # Enlarge the rectangle to account for borders and shadows
+        enlarged_rect = enlarge_rectangle(rect_coords, enlargement_size, img_shape)
+
+        # Create the outer rectangle at a certain padding distance
+        outer_rect = create_outer_rectangle(enlarged_rect, outer_padding, img_shape)
+
+        # Get the most frequent color from the outer rectangle
+        most_frequent_color = get_most_frequent_color(image, outer_rect, enlarged_rect)
+
+        # Fill the inner enlarged rectangle with the most frequent boundary color
+        image = fill_inner_rectangle(image, enlarged_rect, most_frequent_color)
+
+    # Save the output image with the same name as the JSON file
+    output_image_name = os.path.splitext(os.path.basename(json_path))[0] + '.png'
+    output_image_path = os.path.join(output_path, output_image_name)
+    cv2.imwrite(output_image_path, image)
+    print(f"Output image saved as: {output_image_path}")
+
+# Script execution
+if __name__ == "__main__":
+    if len(sys.argv) != 3:
+        print("Usage: python script.py <path to json file> <path to save output Image>")
+        sys.exit(1)
+    
+    json_path = sys.argv[1]
+    output_path = sys.argv[2]
+
+    try:
+        process_image(json_path, output_path)
+    except Exception as e:
+        print(f"Error: {e}")
+
