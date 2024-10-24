@@ -18,3 +18,26 @@ def get_image_path(json_dir, image_base):
 json_dir = os.path.dirname(json_path)  # Get the directory from the JSON path
 image_base = shapes[0]['imagePath'][:-4]  # Remove the extension from imagePath
 image_path = get_image_path(json_dir, image_base)
+
+
+
+
+
+
+def fill_inner_rectangle(image, inner_rect, color, blur_strength=5):
+    x1, y1 = inner_rect[0]
+    x2, y2 = inner_rect[1]
+    
+    # Create a mask with the same size as the image, initialized to zeros (black)
+    mask = np.zeros_like(image)
+
+    # Fill the inner rectangle with the color in the mask
+    mask[y1:y2, x1:x2] = color
+
+    # Apply Gaussian Blur to the mask for smoother edges
+    blurred_mask = cv2.GaussianBlur(mask, (blur_strength, blur_strength), 0)
+
+    # Blend the blurred mask with the original image using addWeighted
+    blended_image = cv2.addWeighted(image, 1.0, blurred_mask, 0.5, 0)
+
+    return blended_image
