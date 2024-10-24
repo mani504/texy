@@ -74,3 +74,36 @@ def fill_inner_rectangle(image, inner_rect, color, blur_strength=5):
 
     return image
 
+
+
+def fill_inner_rectangle(image, inner_rect, color, blur_strength=5, padding=10):
+    x1, y1 = inner_rect[0]
+    x2, y2 = inner_rect[1]
+    
+    # Create a copy of the original image to avoid modifying it directly
+    image_copy = image.copy()
+
+    # Fill the inner rectangle area with the specified color
+    image_copy[y1:y2, x1:x2] = color
+
+    # Create a mask for the inner rectangle
+    mask = np.zeros_like(image_copy, dtype=np.uint8)
+    mask[y1:y2, x1:x2] = color
+
+    # Define the padded rectangle area for blurring
+    padded_x1 = max(0, x1 - padding)
+    padded_y1 = max(0, y1 - padding)
+    padded_x2 = min(image.shape[1], x2 + padding)
+    padded_y2 = min(image.shape[0], y2 + padding)
+
+    # Extract the area to blur
+    blur_area = image_copy[padded_y1:padded_y2, padded_x1:padded_x2]
+
+    # Apply Gaussian Blur only to the padded area
+    blurred_area = cv2.GaussianBlur(blur_area, (blur_strength, blur_strength), 0)
+
+    # Replace the corresponding area in the original image with the blurred area
+    image[padded_y1:padded_y2, padded_x1:padded_x2] = blurred_area
+
+    return image
+
