@@ -1,0 +1,25 @@
+def get_most_frequent_color(image, outer_rect, inner_rect):
+    outer_x1, outer_y1 = outer_rect[0]
+    outer_x2, outer_y2 = outer_rect[1]
+
+    inner_x1, inner_y1 = inner_rect[0]
+    inner_x2, inner_y2 = inner_rect[1]
+
+    # Mask the inner rectangle to exclude it from the outer rectangle area
+    outer_area = np.copy(image[outer_y1:outer_y2, outer_x1:outer_x2])
+    outer_area[inner_y1 - outer_y1:inner_y2 - outer_y1, inner_x1 - outer_x1:inner_x2 - outer_x1] = 0
+
+    # Reshape to a list of pixels
+    outer_pixels = outer_area.reshape(-1, outer_area.shape[-1])
+    outer_pixels = outer_pixels[np.any(outer_pixels != [0, 0, 0], axis=-1)]  # Remove masked pixels
+
+    # Check if there are any valid pixels left after masking
+    if outer_pixels.size == 0:
+        print("Warning: No valid outer pixels found. Using default color (e.g., white).")
+        return [255, 255, 255]  # Default color, adjust as needed
+
+    # Find the most frequent color
+    unique, counts = np.unique(outer_pixels, axis=0, return_counts=True)
+    most_frequent_color = unique[np.argmax(counts)]
+
+    return most_frequent_color
