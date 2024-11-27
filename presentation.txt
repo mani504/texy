@@ -1,1 +1,66 @@
-Keras OCR (Optical Character Recognition) is a high-level library that facilitates detecting and recognizing text in images. It is a combination of two steps: text detection and text recognition. Here’s a step-by-step guide to understanding and implementing Keras OCR.
+Keras OCR (Optical Character Recognition) is a high-level library that facilitates detecting and recognizing text in images.
+It is a combination of two steps: text detection and text recognition. Here’s a step-by-step guide to understanding and implementing Keras OCR.
+
+1. Text Detection
+Architecture: Keras OCR uses CRAFT (Character Region Awareness for Text detection), a deep learning model designed to detect text regions in natural images.
+Working: The CRAFT model identifies individual character regions and their links to form text lines. It leverages convolutional neural networks (CNNs) for feature extraction and detection.
+
+2. Text Recognition
+Architecture: For text recognition, Keras OCR employs a convolutional recurrent neural network (CRNN).
+
+
+cv2.inpaint is a method in OpenCV used for image restoration. It is primarily used to remove unwanted objects or imperfections (like scratches, text, or marks) from an image by filling them in with the surrounding texture or color patterns. The method works by reconstructing the missing or damaged parts of an image using information from the surrounding pixels.
+
+
+Algorithm to use for inpainting. Available options:
+cv2.INPAINT_TELEA: A fast inpainting method by Alexandru Telea. Works well for small regions.
+cv2.INPAINT_NS: The Navier-Stokes based method. This method is slower but can produce smoother results for larger areas.
+
+
+Navier-Stokes (INPAINT_NS):
+Computes the gradients of surrounding pixels and propagates them into the missing area.
+Works well for smooth surfaces.
+Telea Method (INPAINT_TELEA):
+A fast-marching method that fills in missing regions by extrapolating pixel colors along the edges and smoothing them.
+
+
+LearningOUtcomes:
+
+Text Erase:
+
+Understanding Keras OCR for Text Detection:
+Learn how to use Keras OCR for detecting text regions in images. This includes initializing and using the Pipeline object to process images and extract text boxes.
+
+Image Processing Techniques:
+Inpainting: Understanding how to use OpenCV's inpainting function (cv2.inpaint) to fill regions of an image (in this case, text regions) with surrounding background. This helps in creating a clean image where the text is removed.
+
+File and Directory Management:
+Learn how to handle file and directory operations in Python, such as reading files from a directory, checking if the directory exists, and saving processed files to a new directory.
+
+rect:
+
+Learning Outcomes from the Project:
+
+Pixel Manipulation:
+Extracted color information from specific regions of an image.
+Performed pixel-wise operations, such as reshaping image regions for analysis.
+
+File Parsing:
+Parsed JSON files to extract structured data such as rectangle coordinates.
+
+Code Refactoring:
+Improved script readability, modularity, and maintainability by organizing the code into reusable functions.
+
+
+LAMA:
+Technical Skills:
+Integrated OCR (Keras-OCR) for text detection and inpainting models (LaMa) for image restoration.
+Gained experience in preprocessing images and creating masks programmatically.
+
+Optimization Techniques:
+Reused models to optimize resource usage in batch processing.
+Error handling for robust and scalable code.
+
+Real-World Application:
+Addressed a practical challenge in satellite imaging and maps.
+Understood limitations of existing inpainting techniques and devised a robust workflow to overcome them.
