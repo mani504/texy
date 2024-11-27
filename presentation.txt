@@ -1,0 +1,1 @@
+Keras OCR (Optical Character Recognition) is a high-level library that facilitates detecting and recognizing text in images. It is a combination of two steps: text detection and text recognition. Here’s a step-by-step guide to understanding and implementing Keras OCR.
